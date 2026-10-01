@@ -1,0 +1,325 @@
+{
+  "datasets": [
+    {
+      "name": "b4995fe6",
+      "displayName": "gold_population_statistics",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\r\n    mean_population,\r\n    population_stddev\r\nFROM bls.gold.gold_population_statistics",
+        "dimensions": [
+          {
+            "expr": "source.*"
+          }
+        ],
+        "measures": [
+          {
+            "name": "count",
+            "expr": "COUNT(*)",
+            "comment": "Represents the total number of rows in the dataset. Use this measure to count all",
+            "displayName": "Count"
+          }
+        ]
+      }
+    },
+    {
+      "name": "6c8af32b",
+      "displayName": "gold_bls_best_year",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\r\n    series_id,\r\n    series_label,\r\n    best_year,\r\n    annual_value\r\nFROM bls.gold.gold_bls_best_year",
+        "dimensions": [
+          {
+            "expr": "source.*"
+          }
+        ],
+        "measures": [
+          {
+            "name": "count",
+            "expr": "COUNT(*)",
+            "comment": "Represents the total number of rows in the dataset. Use this measure to count all",
+            "displayName": "Count"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cd00741a",
+      "displayName": "gold_series_population",
+      "config": {
+        "version": "1.1",
+        "source": "SELECT\r\n    year,\r\n    value,\r\n    population\r\nFROM bls.gold.gold_series_population\r\nORDER BY year",
+        "dimensions": [
+          {
+            "expr": "source.*"
+          }
+        ],
+        "measures": [
+          {
+            "name": "count",
+            "expr": "COUNT(*)",
+            "comment": "Represents the total number of rows in the dataset. Use this measure to count all",
+            "displayName": "Count"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "bac28904",
+      "displayName": "BLS & US Population Analytics",
+      "layout": [
+        {
+          "widget": {
+            "name": "population-statistics",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "b4995fe6",
+                  "fields": [
+                    {
+                      "name": "sum(mean_population)",
+                      "expression": "SUM(`mean_population`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showDescription": true,
+                "showTitle": true,
+                "title": {
+                  "value": "- `Population Statistics`",
+                  "fields": []
+                },
+                "description": {
+                  "value": "Mean and standard deviation of US population (2013–2018)",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(mean_population)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "population-standard-deviation",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "b4995fe6",
+                  "fields": [
+                    {
+                      "name": "sum(population_stddev)",
+                      "expression": "SUM(`population_stddev`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "showDescription": true,
+                "title": {
+                  "value": "Population Standard Deviation",
+                  "fields": []
+                },
+                "description": {
+                  "value": "Standard deviation of US population (2013–2018)",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "sum(population_stddev)"
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 0,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bls-best-year-series",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "6c8af32b",
+                  "fields": [
+                    {
+                      "name": "series_id",
+                      "expression": "`series_id`"
+                    },
+                    {
+                      "name": "series_label",
+                      "expression": "`series_label`"
+                    },
+                    {
+                      "name": "best_year",
+                      "expression": "`best_year`"
+                    },
+                    {
+                      "name": "annual_value",
+                      "expression": "`annual_value`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "showDescription": true,
+                "title": {
+                  "value": "BLS Best Year by Series",
+                  "fields": []
+                },
+                "description": {
+                  "value": "Year with the largest annual sum of quarterly values for each BLS series",
+                  "fields": []
+                }
+              },
+              "version": 2,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "series_id"
+                  },
+                  {
+                    "fieldName": "series_label"
+                  },
+                  {
+                    "fieldName": "best_year"
+                  },
+                  {
+                    "fieldName": "annual_value"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "prs30006032-q01-trend",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "cd00741a",
+                  "fields": [
+                    {
+                      "name": "year",
+                      "expression": "`year`"
+                    },
+                    {
+                      "name": "sum(year)",
+                      "expression": "SUM(`year`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "showDescription": true,
+                "title": {
+                  "value": "PRS30006032 Q01 Trend",
+                  "fields": []
+                },
+                "description": {
+                  "value": "Annual Q01 value for PRS30006032",
+                  "fields": []
+                }
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "year",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "y": {
+                  "fieldName": "sum(year)",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    },
+    {
+      "name": "764c2c7c",
+      "displayName": "Global Filters",
+      "pageType": "PAGE_TYPE_GLOBAL_FILTERS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
