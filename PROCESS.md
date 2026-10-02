@@ -78,7 +78,7 @@ Temporary download location:
 /Volumes/bls/bronze/bls_raw/tmp/
 ```
 
-The source acquisition and control logic runs before the SDP pipeline. The SDP pipeline starts from the raw files and builds the Bronze, Silver, and Gold datasets.
+The source acquisition and control logic runs before the SDP pipeline. The SDP pipeline starts from the raw files and builds the Bronze, Silver, and Gold datasets. The ingestion control table is stored as a Delta table, and the SDP-managed materialized views are Delta-backed managed datasets.
 
 ---
 
@@ -171,9 +171,7 @@ If a file exists in the control table but is no longer discovered in the BLS dir
 ingestion_status = SOURCE_REMOVED
 ```
 
-The raw file is intentionally retained in the Volume for audit/history purposes.
-
-A removed source file is not considered an active source file for subsequent Bronze processing.
+The raw file is intentionally retained in the Volume for audit/history purposes. The source-ingestion control state prevents it from being downloaded again while it remains absent from the source.
 
 If the same file later reappears at the source, it is detected and ingested again.
 
@@ -585,46 +583,20 @@ The final pipeline outputs were validated against the assignment requirements.
 
 The source files are relatively small for this assignment, but the BLS `pr.data.1.AllData` file contains a significant number of rows compared with the metadata files.
 
-The SDP pipeline uses materialized views for the required Bronze, Silver, and Gold datasets.
+The SDP pipeline uses materialized views for the required Bronze, Silver, and Gold datasets. The current pipeline is run with a Refresh all operation because the assignment dataset is relatively small; the incremental behavior is implemented at the source-ingestion layer rather than by claiming the SDP pipeline itself is incremental.
 
-Because these datasets are materialized views and data-quality expectations are applied, repeated pipeline updates can involve substantial recomputation. This was observed particularly for the large BLS data dataset.
+Because these datasets are materialized views and data-quality expectations are applied, repeated Refresh all operations can involve substantial recomputation. This was observed particularly for the large BLS data dataset.
 
 For the assignment, correctness and clear implementation were prioritized over aggressive optimization.
 
 For a larger production workload, possible improvements could include:
 
-- using Auto Loader to incrementally discover newly landed files;
-- landing Auto Loader output into Delta before downstream transformations;
-- using streaming tables or other incremental processing patterns where supported by the workload;
+- incremental processing where supported by the pipeline architecture;
 - partitioning or clustering strategies based on actual query patterns;
 - avoiding unnecessary full refreshes;
 - isolating expensive transformations;
 - monitoring execution duration and compute consumption;
 - selecting appropriate table types for incremental workloads.
-
-### Reference production pattern
-
-The current assignment intentionally keeps the implementation simple: Python performs BLS source discovery and change detection, and SDP reads the raw files from the Volume.
-
-For a larger file-based workload, this can evolve to:
-
-```text
-BLS source
-   ↓
-Source-specific ingestion / change detection
-   ↓
-Raw Volume
-   ↓
-Auto Loader
-   ↓
-Delta Bronze
-   ↓
-Silver incremental processing
-   ↓
-Gold materialized views / tables
-```
-
-Auto Loader is useful for incremental file discovery, but it does not by itself replace the source-specific change detection used here. In particular, modified-in-place or removed source files may require explicit handling. The reference Auto Loader code is kept separately for learning and is not part of the current assignment implementation.
 
 ---
 
@@ -700,7 +672,7 @@ Useful production monitoring metrics would include:
 - pipeline execution duration;
 - compute consumption.
 
-These metrics could be connected to operational alerting in a production environment.
+These metrics could be connected to operational alerting in a production environment. The current project does not configure production alerts; monitoring and alerting are documented as production considerations.
 
 ---
 
@@ -738,23 +710,21 @@ The dashboard provides a simple business-facing view of the analytical outputs w
 
 ## 20. Deployment and Repository Structure
 
-The project is organized so that source ingestion, population ingestion, validation, and SDP pipeline logic are separated into understandable notebook components.
+The project is organized into notebooks, pipeline definitions, dashboard assets, screenshots, and documentation.
 
-Suggested repository structure:
+Repository structure:
 
 ```text
 BLS/
-│
-├── 01_Setup_Catalog_Schema
-├── 02_BLS_Ingestion
-├── 03_Population_Ingestion
-├── 04_Check_File_Details
-├── BLS_SDP_Pipeline
+├── dashboard/
+├── notebooks/
+├── pipeline/
+├── screenshots/
 ├── PROCESS.md
 └── README.md
 ```
 
-The repository should contain the source code required to reproduce the project and the documentation needed to understand the design decisions.
+The repository contains the source code required to reproduce the project, supporting dashboard/screenshot assets, and the documentation needed to understand the design decisions.
 
 ---
 
@@ -768,7 +738,6 @@ The repository should contain the source code required to reproduce the project 
 | Temporary download location | Prevent incomplete downloads from replacing valid raw files |
 | Retain removed raw files | Preserve audit/history |
 | Explicit Spark schemas | Control expected data types |
-| Auto Loader (reference only) | Scalable incremental file discovery for a future production design |
 | Bronze/Silver/Gold layers | Separate ingestion, enrichment, and business logic |
 | Trim `series_id` in Silver | Preserve raw source while normalizing analytical keys |
 | Human-readable `series_label` | Make BLS outputs understandable |
@@ -823,7 +792,18 @@ were therefore used to place datasets in the intended Unity Catalog schemas.
 
 ---
 
-## 23. Final Outcome
+## 23. AI Usage
+
+AI was used during the development of this project for:
+
+- assisting with selected portions of code and code refinement;
+- troubleshooting implementation issues;
+- evaluating design alternatives;
+- improving project documentation.
+
+---
+
+## 24. Final Outcome
 
 The completed solution provides:
 
