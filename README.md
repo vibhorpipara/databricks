@@ -243,6 +243,13 @@ BLS/
 ├── 03_Population_Ingestion
 ├── 04_Check_File_Details
 ├── BLS_SDP_Pipeline
+├── screenshots/
+│   ├── 01_bls_sdp_pipeline.png
+│   ├── 02_Q1_gold_population_statistics.png
+│   ├── 03_Q2_gold_bls_best_year.png
+│   ├── 04_Q3_gold_series_population.png
+│   ├── 05_Dashboard.png
+│   └── 06_Genie_Q&A.png
 ├── README.md
 └── PROCESS.md
 ```
@@ -263,6 +270,32 @@ A Databricks dashboard was created using the Gold tables and includes:
 2. Population standard deviation
 3. BLS best year by series
 4. `PRS30006032` Q01 annual trend
+
+## Screenshots
+
+### BLS SDP Pipeline — Bronze → Silver → Gold
+
+![BLS SDP Pipeline](screenshots/01_bls_sdp_pipeline.png)
+
+### Q1 — Population Statistics
+
+![Q1 Gold Result](screenshots/02_Q1_gold_population_statistics.png)
+
+### Q2 — Best Year by BLS Series
+
+![Q2 Gold Result](screenshots/03_Q2_gold_bls_best_year.png)
+
+### Q3 — BLS Series Value with Population
+
+![Q3 Gold Result](screenshots/04_Q3_gold_series_population.png)
+
+### Analytics Dashboard
+
+![Dashboard](screenshots/05_Dashboard.png)
+
+### Genie Natural-Language Q&A
+
+![Genie Q&A](screenshots/06_Genie_Q&A.png)
 
 ## Documentation
 

@@ -593,12 +593,38 @@ For the assignment, correctness and clear implementation were prioritized over a
 
 For a larger production workload, possible improvements could include:
 
-- incremental processing where supported by the pipeline architecture;
+- using Auto Loader to incrementally discover newly landed files;
+- landing Auto Loader output into Delta before downstream transformations;
+- using streaming tables or other incremental processing patterns where supported by the workload;
 - partitioning or clustering strategies based on actual query patterns;
 - avoiding unnecessary full refreshes;
 - isolating expensive transformations;
 - monitoring execution duration and compute consumption;
 - selecting appropriate table types for incremental workloads.
+
+### Reference production pattern
+
+The current assignment intentionally keeps the implementation simple: Python performs BLS source discovery and change detection, and SDP reads the raw files from the Volume.
+
+For a larger file-based workload, this can evolve to:
+
+```text
+BLS source
+   ↓
+Source-specific ingestion / change detection
+   ↓
+Raw Volume
+   ↓
+Auto Loader
+   ↓
+Delta Bronze
+   ↓
+Silver incremental processing
+   ↓
+Gold materialized views / tables
+```
+
+Auto Loader is useful for incremental file discovery, but it does not by itself replace the source-specific change detection used here. In particular, modified-in-place or removed source files may require explicit handling. The reference Auto Loader code is kept separately for learning and is not part of the current assignment implementation.
 
 ---
 
@@ -742,6 +768,7 @@ The repository should contain the source code required to reproduce the project 
 | Temporary download location | Prevent incomplete downloads from replacing valid raw files |
 | Retain removed raw files | Preserve audit/history |
 | Explicit Spark schemas | Control expected data types |
+| Auto Loader (reference only) | Scalable incremental file discovery for a future production design |
 | Bronze/Silver/Gold layers | Separate ingestion, enrichment, and business logic |
 | Trim `series_id` in Silver | Preserve raw source while normalizing analytical keys |
 | Human-readable `series_label` | Make BLS outputs understandable |
