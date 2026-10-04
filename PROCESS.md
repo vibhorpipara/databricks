@@ -221,7 +221,7 @@ A separate control table was not introduced for DataUSA because the assignment o
 
 ## 6. Bronze Layer
 
-The Bronze layer represents the source data in structured form with minimal transformation.
+The Bronze layer represents the source data in structured form with minimal transformation. All discovered BLS source files are landed in the raw Volume, but not every raw reference/documentation file requires a separate structured Bronze dataset. Structured Bronze datasets are created for the source files required by downstream analytical processing.
 
 ### Main Bronze datasets
 
@@ -412,7 +412,7 @@ bls.gold.gold_bls_best_year
 
 ### Logic
 
-The Silver data is first aggregated by:
+The Silver data is first filtered to the four quarterly periods `Q01`–`Q04` and then aggregated by:
 
 ```text
 series_id
@@ -420,7 +420,7 @@ series_label
 year
 ```
 
-The quarterly values are summed to produce an annual value.
+BLS defines `Q05` as **Annual Average**, not as a fifth quarter, so `Q05` is excluded from the quarterly sum. The quarterly values from `Q01`–`Q04` are summed to produce an annual value.
 
 A window function then ranks the years within each series by:
 
@@ -450,9 +450,9 @@ The human-readable `series_label` is included so users do not need to interpret 
 
 ### Validation
 
-The resulting dataset contains one record for each distinct BLS series.
+The source contains 282 distinct BLS series. Of these, 237 have `Q01`–`Q04` quarterly observations and are eligible for this calculation. The remaining 45 series contain only `Q05` Annual Average observations and therefore cannot produce an annual sum of quarterly values.
 
-The implementation was validated against the distinct series count in the source data.
+The resulting Gold dataset therefore contains 237 records, one for each series with quarterly observations. The implementation was validated against the distinct series and period counts in the source data.
 
 ### Alternative implementation
 
@@ -680,7 +680,7 @@ These metrics could be connected to operational alerting in a production environ
 
 ### 19.1 Genie
 
-A Databricks Genie Agent was configured using the Gold tables.
+A Databricks Genie Space named **BLS Economic and Population Data** was configured using the Gold tables.
 
 Instructions guide Genie to:
 
@@ -691,11 +691,11 @@ Instructions guide Genie to:
 - use `gold_population_statistics` for population statistics;
 - clearly indicate when population data is unavailable.
 
-The Genie implementation was validated using a population question and returned the same mean population calculated in the Gold table.
+The Genie implementation was validated using population, BLS best-year, and series-population questions against the Gold tables.
 
 ### 19.2 Dashboard
 
-A Databricks dashboard was created using the Gold tables.
+A Databricks dashboard named **BLS & US Population Analytics** was created using the Gold tables.
 
 The dashboard contains visualizations for:
 

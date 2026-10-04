@@ -4,7 +4,7 @@
 
 This project implements an end-to-end data engineering solution for ingesting U.S. Bureau of Labor Statistics (BLS) productivity data and U.S. population data, transforming the data through Bronze, Silver, and Gold layers in Databricks, and producing business-ready analytical outputs.
 
-The project also includes a Databricks Genie Agent and dashboard as bonus deliverables.
+The project also includes a Databricks Genie Space and dashboard as bonus deliverables.
 
 ## Architecture
 
@@ -72,7 +72,7 @@ U.S. population data is retrieved from the DataUSA API and stored as JSON in the
 - Data-quality expectations
 - BLS metadata enrichment with human-readable series labels
 - Spark SQL and PySpark implementations of analytical logic
-- Databricks Genie Agent
+- Databricks Genie Space
 - Databricks dashboard
 
 ## Unity Catalog Structure
@@ -156,11 +156,13 @@ The calculation uses `AVG()` and `STDDEV_POP()`.
 
 ### 2. Best Year for Each BLS Series
 
-For every BLS `series_id`:
+For each BLS `series_id` with quarterly observations:
 
-- Sum `value` across quarters for each year.
+- Sum `value` across `Q01`–`Q04` for each year.
 - Identify the year with the largest annual sum.
 - Include a human-readable `series_label`.
+
+BLS defines `Q05` as **Annual Average**, not a fifth quarter, so it is excluded from the quarterly sum. The source contains 282 distinct series; 237 have quarterly observations and are included in this Gold output, while 45 contain only `Q05` Annual Average observations.
 
 Output:
 
@@ -238,63 +240,50 @@ while their raw copies are retained for audit/history.
 
 ```text
 BLS/
-├── 01_Setup_Catalog_Schema
-├── 02_BLS_Ingestion
-├── 03_Population_Ingestion
-├── 04_Check_File_Details
-├── BLS_SDP_Pipeline
+├── dashboard/
+├── notebooks/
+├── pipeline/
 ├── screenshots/
-│   ├── 01_bls_sdp_pipeline.png
-│   ├── 02_Q1_gold_population_statistics.png
-│   ├── 03_Q2_gold_bls_best_year.png
-│   ├── 04_Q3_gold_series_population.png
-│   ├── 05_Dashboard.png
-│   └── 06_Genie_Q&A.png
-├── README.md
-└── PROCESS.md
+├── PROCESS.md
+└── README.md
 ```
 
 ## Bonus Features
 
 ### Genie
 
-A Databricks Genie Agent was configured using the Gold tables as the primary source for business questions.
+A Databricks Genie Space named **BLS Economic and Population Data** was configured using the Gold tables as the primary source for business questions.
 
 The Genie instructions guide it to use the appropriate Gold dataset for population statistics, BLS best-year questions, and the `PRS30006032` population analysis.
 
 ### Dashboard
 
-A Databricks dashboard was created using the Gold tables and includes:
+A Databricks dashboard named **BLS & US Population Analytics** was created using the Gold tables and includes:
 
 1. Mean population
 2. Population standard deviation
 3. BLS best year by series
 4. `PRS30006032` Q01 annual trend
 
+
 ## Screenshots
 
 ### BLS SDP Pipeline — Bronze → Silver → Gold
-
 ![BLS SDP Pipeline](screenshots/01_bls_sdp_pipeline.png)
 
 ### Q1 — Population Statistics
-
 ![Q1 Gold Result](screenshots/02_Q1_gold_population_statistics.png)
 
 ### Q2 — Best Year by BLS Series
-
 ![Q2 Gold Result](screenshots/03_Q2_gold_bls_best_year.png)
 
-### Q3 — BLS Series Value with Population
-
+### Q3 — Series Value with Population
 ![Q3 Gold Result](screenshots/04_Q3_gold_series_population.png)
 
 ### Analytics Dashboard
-
 ![Dashboard](screenshots/05_Dashboard.png)
 
-### Genie Natural-Language Q&A
-
+### Genie Natural Language Q&A
 ![Genie Q&A](screenshots/06_Genie_Q&A.png)
 
 ## Documentation
